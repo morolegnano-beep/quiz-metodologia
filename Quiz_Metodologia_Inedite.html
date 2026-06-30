@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Quiz — Metodologia della Ricerca (Inedite)</title>
+<style>
+  :root {
+    --bordeaux: #7B1535;
+    --oro: #F0C040;
+    --verde: #1E7B34;
+    --rosso: #B3261E;
+    --grigio: #F7F2F0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #fafafa;
+    color: #2a2a2a;
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    background: var(--bordeaux);
+    color: white;
+    padding: 18px 24px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 20px;
+  }
+  header p {
+    margin: 4px 0 0 0;
+    font-size: 13px;
+    opacity: 0.9;
+  }
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 20px 16px 60px 16px;
+  }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: #555;
+  }
+  .progress-wrap {
+    background: #e6e6e6;
+    border-radius: 6px;
+    height: 8px;
+    width: 100%;
+    margin-bottom: 18px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    background: var(--oro);
+    height: 100%;
+    width: 0%;
+    transition: width 0.25s ease;
+  }
+  .card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    padding: 22px 20px;
+  }
+  .block-tag {
+    display: inline-block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bordeaux);
+    background: #f3e3e8;
+    padding: 3px 9px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+  .question {
+    font-size: 17px;
+    line-height: 1.45;
+    margin-bottom: 18px;
+    font-weight: 600;
+  }
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .option {
+    text-align: left;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 14.5px;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .option:hover:not(:disabled) {
+    border-color: var(--bordeaux);
+    background: #fbf3f5;
+  }
+  .option:disabled {
+    cursor: default;
+  }
+  .option.correct {
+    border-color: var(--verde);
+    background: #e9f6ec;
+    color: var(--verde);
+    font-weight: 700;
+  }
+  .option.wrong {
+    border-color: var(--rosso);
+    background: #fbeaea;
+    color: var(--rosso);
+    font-weight: 700;
+  }
+  .option.selected {
+    border-color: var(--bordeaux);
+    background: #f3e3e8;
+    font-weight: 700;
+  }
+  .feedback {
+    margin-top: 14px;
+    font-size: 14px;
+    min-height: 20px;
+  }
+  .feedback.ok { color: var(--verde); font-weight: 600; }
+  .feedback.ko { color: var(--rosso); font-weight: 600; }
+  .controls {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  button.next {
+    background: var(--bordeaux);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 22px;
+    font-size: 14.5px;
+    cursor: pointer;
+    display: none;
+  }
+  button.next:hover { opacity: 0.9; }
+  .score-screen {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .score-screen h2 {
+    color: var(--bordeaux);
+    margin-bottom: 6px;
+  }
+  .score-big {
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--bordeaux);
+    margin: 14px 0;
+  }
+  .score-sub {
+    color: #666;
+    margin-bottom: 26px;
+  }
+  button.restart {
+    background: var(--oro);
+    color: #4a3500;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 26px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button.restart:hover { opacity: 0.9; }
+  .start-screen { text-align: center; padding: 30px 20px; }
+  .start-screen p { color: #555; line-height: 1.6; margin-bottom: 22px; }
+  button.start {
+    background: var(--bordeaux);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 13px 30px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .review-list {
+    text-align: left;
+    margin-top: 24px;
+    font-size: 13px;
+    color: #444;
+  }
+  .review-item {
+    border-bottom: 1px solid #eee;
+    padding: 10px 0;
+  }
+  .review-item .rq { font-weight: 600; margin-bottom: 4px; }
+  .review-item .ra { color: var(--verde); }
+  .review-item .rblock {
+    display: inline-block;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--bordeaux);
+    background: #f3e3e8;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-bottom: 6px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Quiz — Metodologia della Ricerca</h1>
+  <p>Domande inedite · opzioni mescolate ad ogni tentativo</p>
+</header>
+
+<div class="container">
+  <div id="app"></div>
+</div>
+
+<script>
+const QUESTIONS = [{"q": "A cosa si riduce spesso l'applicazione ostinata e acritica del metodo sperimentale alle scienze umane se si ignorano i suoi limiti intrinseci?", "a": "Una banale semplificazione fine a se stessa", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "A quale condizione il metodologo Marradi ritiene pienamente legittima la scelta di non adottare l'approccio standard nella ricerca sociale?", "a": "Se la scelta non comporta rifiuto a priori passare a strumenti e tecniche standard", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Chi sono i due sociologi citati da Marradi come autori della “semplificazione più ridicola” nell'applicazione del metodo sperimentale alle scienze sociali?", "a": "(Edward) Rose e (William) Felton.", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Come avverte il metodologo Corbetta, dato che è lo stesso soggetto studiato a stabilire implicitamente l'unità di misura della scala, questa tecnica soffre di un punto debole, ossia", "a": "la soggettività", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Come osserva Marradi, il linguaggio svolge una funzione di registrazione e fissazione dei pensieri", "a": "per il singolo e contemporaneamente per la comunità", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Come osserva Marradi, nella ricerca sociale l'esaustività è un obiettivo assai difficile da raggiungere", "a": "in molte situazioni", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Come osserva Marradi, uno dei vari limiti pratici del modello sperimentale consiste nel fatto che", "a": "non sempre si può escludere che la proprietà sperimentale influenzi a sua volta la proprietà operativa", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Con quali altre tecniche è stata aumentata l'integrazione del Metodo Delphi nel XXI secolo per potenziarne l'efficacia?", "a": "Modellazione strutturale interpretativa (e analisi dell'impatto incrociato).", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Cosa afferma Alberto Marradi riguardo ai nessi proposti dalle spiegazioni causali fra i loro referenti (eventi, stati, ecc.)?", "a": "Che non sono direttamente osservabili.", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Cosa stigmatizza il sociologo Melville Dalton riguardo al rapporto tra scienze sociali e naturali?", "a": "La sudditanza di troppi scienziati sociali verso le scienze “dure”.", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Di fronte alla proliferazione di software di analisi e tecniche avanzate, quale criticità metodologica è stata evidenziata da studiosi come Ricolfi o Labovitz?", "a": "Squilibrio tra lo sviluppo di questi metodi e la loro applicazione effettiva", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Già negli anni '70 il metodologo Vittorio Capecchi stigmatizzava lo squilibrio esistente fra", "a": "lo sviluppo autonomo dei metodi matematici e le loro effettive applicazioni", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "I casi dei Maya dello Yucatan e degli Indios dell'Amazzonia, menzionati dal metodologo Marradi, sono indicativi del fatto che gli esseri umani generalmente non riescono a concettualizzare in modo autonomo qualcosa che", "a": "non sia stata loro descritta a viva voce da altre persone", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "I metodologi sottolineano concordemente che, per via della specifica natura delle variabili costruite con le scale, è necessario limitarsi a chiamarle", "a": "quasi-cardinali", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Il numero massimo di partecipanti ad un focus group è stato fissato dai metodologi a", "a": "6", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Il Centro Metodologico di Łódź in Polonia durante la dittatura comunista effettuava", "a": "Controlli basati sul riesame sistematico e dettagliato dei questionari di un sottoinsieme del campione", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Il filone delle ricerche condotte con la tecnica dell'osservazione partecipante e rivolta a studiare un fenomeno sociale del quale il ricercatore stesso ha fatto o fa ancora parte prende il nome di", "a": "sociologia autobiografica", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Il fondatore dell'etnometodologia negli anni '60 è stato lo studioso americano", "a": "Harold Garfinkel", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Il metodologo Corbetta ritiene che negli anni '20 e '30 del XX secolo il rapporto fra sostenitori della ricerca quantitativa e qualitativa sia stato caratterizzato da", "a": "un confronto vivace e fruttuoso fra le due parti", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "In merito al rapporto fra termini e concetti, la posizione del metodologo Marradi è che", "a": "il collegamento fra termine e concetti è mutevole nello spazio e nel tempo per via della natura stessa dei concetti", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "La prima delle tre tesi all'apparenza condivisibili e relative ai concetti enumerata da Marradi è la tesi secondo cui", "a": "Chi pensa deve essere consapevole dei concetti che ha in mente in un dato momento", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "La tendenza ad attribuire eccessiva importanza alle tecniche di ricerca anche nelle scienze umane e sociali era già stata criticata da uno dei primi sociologi, ossia", "a": "Simmel", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Qual è l'obiettivo finale a cui mira l'iterazione controllata e anonima nel Metodo Delphi?", "a": "Ottenere una convergenza di opinioni e identificare tendenze comuni", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Qual è la prima delle tre tesi sui concetti elencate (e criticate) da Alberto Marradi?", "a": "Chi pensa dev'essere consapevole dei concetti che ha in mente in un dato momento.", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Quale metodologo italiano ha elaborato il concetto di “ciclo metodologico della ricerca sociale” (composto da 4 fasi: costituzione, trattamento, interpretazione, diffusione)?", "a": "(Costantino) Cipolla.", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Quali sono i due aggettivi usati in metodologia per descrivere, rispettivamente 1) il processo non lineare di raccolta e analisi dati nella Grounded Theory, e 2) la specifica definizione di “intervista qualitativa” coniata da Mario Cardano?", "a": "Iterativo e discorsivo", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Riguardo al limite teorico degli esperimenti nelle scienze sociali, che cosa osserva Marradi a proposito dell'influenza di ritorno tra proprietà sperimentale e operativa?", "a": "Non sempre si può escludere", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Secondo Corbetta i sociologi positivisti fino all'inizio del Novecento seguirono il metodo (NB: il Paniere riporta “Induttivo” alla stessa domanda — verificare)", "a": "ipotetico deduttivo", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Il metodo ipotetico deduttivo è stato sviluppato dagli specialisti delle scienze", "a": "fisiche e matematiche", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Secondo il metodologo Costantino Cipolla, che si adotti l'approccio ipotetico-deduttivo o induttivo, la ricerca sociale si compone sempre e comunque di", "a": "4 fasi", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Secondo il sociologo Costantino Cipolla, la ricerca sociale si compone sempre e comunque di", "a": "Teoria e ricerca empirica.", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Uno dei rischi evidenziati nella metodologia della ricerca sociale riguarda", "a": "La trascuratezza nelle fasi di costruzione concettuale e trasformazione delle proprietà in variabili", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "L'aggregazione non deve diventare", "a": "Una banale classificazione fine a se stessa", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Per metodologia intendiamo (NB: il Paniere riporta “riflessione sul metodo” alla domanda equivalente — verificare)", "a": "Una critica della ricerca scientifica", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Marradi, dal canto suo, traccia un parallelismo fra l'eccesso di specializzazione in alcune tecniche ed il consumismo, “dato che hanno due caratteristiche in comune:", "a": "la tendenza a orientarsi verso il prodotto nuovo abbandonando il vecchio", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Ricerca scientifica, Galileo", "a": "Il primo embrione di metodo sperimentale", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Uno dei limiti della ricerca sociale contemporanea è rappresentato da", "a": "Lo squilibrio tra il perfezionamento tecnico dei metodi e la loro effettiva e consapevole applicazione nella ricerca empirica", "block": "BLOCCO 1 — Metodo, metodologia, tecnica"}, {"q": "Che cosa va a definire esattamente l'intensione di un concetto all'interno dell'attività di ricerca e classificazione?", "a": "Il particolare e preciso contenuto di un termine", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Come osservò l'economista Jevons, le forme viventi", "a": "non ammettono rigorose linee di demarcazione", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Come vengono interpretate e ridotte le azioni umane secondo i postulati del behaviorismo radicale che prescinde da motivazioni o stati di coscienza?", "a": "Reazioni all'ambiente fisico perlopiù inconsce", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Con il termine “midrange” si intende", "a": "La metà della somma del valore minimo e del valore massimo della distribuzione", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Di che cosa è oggetto la riflessione critica generale intorno alla conoscenza scientifica (epistemologia)?", "a": "della scienza", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "I filosofi Spirito e Mondolfo, nella loro definizione enciclopedica, sostengono che grosso modo si può dire che scienza è diventato sinonimo di", "a": "conoscenza dell'universale", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Il concetto di “coda lunga” è stato elaborato da", "a": "Chris Anderson", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "L'approccio teorico di Alfred Schutz si colloca nell'ambito della", "a": "Fenomenologia sociologica", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Il sociologo Alfred Schutz fu esponente della scuola di pensiero di orientamento non-standard nota come", "a": "fenomenologia sociologica", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Il modo di parlare della realtà sociale ricorrendo massicciamente alla statistica fu definito da Lazarsfeld", "a": "Linguaggio delle variabili", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Il rapporto fra discipline formali e scienze empiriche è", "a": "problematico", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Il termine che indica una nuova mappatura del potere globale fondata sulle infrastrutture, le reti e le connessioni piuttosto che sui confini degli Stati è", "a": "Connettografia", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Il termine tecnico che indica il variare delle variabili dipendenti per l'azione di quelle indipendenti è", "a": "varianza", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "In una sua accezione più semplice e comune il termine “epistemologia” è divenuto di fatto sinonimo di", "a": "Filosofia della scienza", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "La classificazione elaborata dall'antropologo James Spradley si articola in", "a": "domande descrittive, domande strutturali e domande contrasto", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Marradi asserisce che il disinteresse degli studiosi per i concetti si deve all'influsso di un connubio fra", "a": "epistemologia certista e gnoseologia realista", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Nel contesto dell'analisi della varianza (ANOVA), il p-value indica", "a": "Il livello di significatività del test dell'ipotesi nulla", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Nel processo di attribuzione di un nome a un oggetto o a un fenomeno, il termine corretto è", "a": "Nomination", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Nel rapporto tra discipline formali e scienze empiriche, la riflessione epistemologica moderna sostiene che", "a": "Le scienze non ammettono rigorose linee di demarcazione assolute", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Perché la realtà empirica è difficilmente incasellabile in classi in maniera perfetta e ben delimitata — frase dell'economista William Stanley Jevons", "a": "“le forme viventi non ammettono rigorose linee di demarcazione”", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Qual è l'obiettivo principale della preparazione degli intervistatori nel somministrare un questionario evitando di trasmettere aspettative?", "a": "Non alterare la libera espressione di pensiero dei soggetti stessi", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Qual è la prima delle tre tesi fondamentali (esplicitata da Gellner) per un uso corretto e rigoroso dei concetti nella ricerca?", "a": "Chi pensa deve essere consapevole dei concetti che ha in mente", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Quale approccio alla conoscenza emerge come obiettivo fondamentale nei tempi attuali?", "a": "Umanista", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Quale corrente di pensiero (diffusasi dagli anni '60) contestò il comportamentismo rivalutando i processi mentali?", "a": "Cognitivismo.", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Quale osservazione formulò nell'Ottocento l'economista e logico britannico William Stanley Jevons per spiegare il motivo per cui la realtà empirica è difficilmente “incasellabile” in classi perfette?", "a": "“Le forme viventi non ammettono rigorose linee di demarcazione”.", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Secondo il politologo Sartori i concetti di funzione, di struttura, di equilibrio, di isomorfismo sono esemplari in quanto si tratta di", "a": "concetti non veramente scientifici perché nati nell'ambito della poesia", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Secondo il politologo Sartori i concetti, di struttura, di equilibrio, di isomorfismo sono degli esemplari in quanto si tratta di", "a": "concetti che si sono astratti dai loro referenti empirici", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Secondo l'epistemologia post-positivista, l'osservazione empirica", "a": "È carica di teoria", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Secondo Spradley, quali sono le tre tipologie principali di domande da porre in un'intervista etnografica?", "a": "Domande descrittive, domande strutturali e domande-contrasto.", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Su quale argomento ha scritto un eccellente libro David Weinberger (2007)?", "a": "Le nuove possibilità classificatorie che emergono attraverso Internet.", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Un'intensione sistematica meno precisa ed un'estensione più ampia caratterizzano", "a": "concetti definiti “generi”", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "I filosofi Ugo Spirito e Rodolfo Mondolfo dividevano le scienze in", "a": "3 categorie", "block": "BLOCCO 2 — Conoscenza, linguaggio, concetti"}, {"q": "Come concepirono la filosofia i neopositivisti (o positivisti logici)?", "a": "Filosofia della scienza (o logica ed epistemologia).", "block": "BLOCCO 3 — Paradigmi, positivismo, interpretativismo"}, {"q": "I due principali precetti metodologici di Weber sono", "a": "L'avalutatività e la possibilità di arrivare a enunciati con qualche carattere di generalità.", "block": "BLOCCO 3 — Paradigmi, positivismo, interpretativismo"}, {"q": "Il paradigma interpretativo ha assunto, fra gli altri nomi ed etichette, anche quello di", "a": "umanista", "block": "BLOCCO 3 — Paradigmi, positivismo, interpretativismo"}, {"q": "Secondo l'epistemologo Kuhn lo sviluppo delle scienze nel tempo è costituito da", "a": "tempi normali e momenti rivoluzionari", "block": "BLOCCO 3 — Paradigmi, positivismo, interpretativismo"}, {"q": "In quale disciplina si laureò inizialmente Thomas Kuhn prima di diventare storico della scienza?", "a": "Fisica.", "block": "BLOCCO 3 — Paradigmi, positivismo, interpretativismo"}, {"q": "Secondo Thomas Kuhn, come procede lo sviluppo storico delle scienze?", "a": "Tempi “normali”/Momenti “rivoluzionari”", "block": "BLOCCO 3 — Paradigmi, positivismo, interpretativismo"}, {"q": "L'alleanza fra operazionismo, comportamentismo e positivismo logico è entrata in crisi in buona parte per le contestazioni provenienti da", "a": "Il post-modernismo", "block": "BLOCCO 3 — Paradigmi, positivismo, interpretativismo"}, {"q": "La teoria della falsificabilità è stata illustrata da Karl Popper sin dalla sua prima opera, ossia", "a": "La logica della scoperta scientifica", "block": "BLOCCO 3 — Paradigmi, positivismo, interpretativismo"}, {"q": "Qual è l'opera principale di Karl Popper (1935) in cui teorizza il principio di falsificabilità?", "a": "La logica della scoperta scientifica", "block": "BLOCCO 3 — Paradigmi, positivismo, interpretativismo"}, {"q": "Nella distinzione di Wilhelm Windelband, le scienze dedite allo studio di situazioni particolari nella loro unicità assumono il nome di", "a": "scienze idografiche", "block": "BLOCCO 3 — Paradigmi, positivismo, interpretativismo"}, {"q": "Nella prospettiva durkheimiana, la coesione sociale si fonda anche sull'azione educativa esercitata principalmente da", "a": "Il ruolo della famiglia", "block": "BLOCCO 3 — Paradigmi, positivismo, interpretativismo"}, {"q": "Qual era la formazione iniziale di Auguste Comte (fondatore del Positivismo)?", "a": "ingegnere", "block": "BLOCCO 3 — Paradigmi, positivismo, interpretativismo"}, {"q": "Secondo la teoria della falsicabilità", "a": "un numero molto elevato di conferme non è mai sufficiente a verificare in modo conclusivo un'asserzione universale", "block": "BLOCCO 3 — Paradigmi, positivismo, interpretativismo"}, {"q": "Aristotele, oltre ad essere un filosofo classico condusse studi approfonditi di", "a": "botanica e zoologia", "block": "BLOCCO 3 — Paradigmi, positivismo, interpretativismo"}, {"q": "Come si definiscono le scienze dedite allo studio di situazioni particolari nella loro unicità?", "a": "Scienze idiografiche.", "block": "BLOCCO 3 — Paradigmi, positivismo, interpretativismo"}, {"q": "La tendenza tipicamente ottocentesca di individuare leggi universali ed immutabili che governassero ogni aspetto della realtà, e fossero fondate nella realtà stessa e non in una divinità, “contagiò” anche pensatori non positivisti come ad esempio", "a": "Karl Marx", "block": "BLOCCO 3 — Paradigmi, positivismo, interpretativismo"}, {"q": "Cosa sostenevano di aver ricostruito in laboratorio i sociologi Rose e Felton (in un esperimento criticato da Marradi)?", "a": "Processi di diffusione di elementi culturali fra una società e l'altra.", "block": "BLOCCO 4 — Causalità, esperimento, matrice dei dati"}, {"q": "Gli “impact studies” sono una categoria di esperimenti di laboratorio nella quale", "a": "si richiede il coinvolgimento dei soggetti inducendoli a determinati comportamenti", "block": "BLOCCO 4 — Causalità, esperimento, matrice dei dati"}, {"q": "Il metodologo Marradi critica aspramente l'applicazione dell'esperimento alle scienze sociali operata da due sociologi, Edward Rose e William Felton, che sostenevano di aver ricostituito in laboratorio", "a": "I processi di diffusione di elementi culturali fra una società e l'altra", "block": "BLOCCO 4 — Causalità, esperimento, matrice dei dati"}, {"q": "La distinzione fra la “congiunzione costante” di cose e la “produzione” di una da parte dell'altra è formulata da", "a": "Bunge", "block": "BLOCCO 4 — Causalità, esperimento, matrice dei dati"}, {"q": "Qual è il rischio specifico che rende una relazione pensata come uni-direzionale in realtà bi-direzionale durante un esperimento?", "a": "Che la proprietà sperimentale influenzi la proprietà operativa", "block": "BLOCCO 4 — Causalità, esperimento, matrice dei dati"}, {"q": "Qual è l'obiettivo fondamentale della randomizzazione nella creazione di due gruppi (sperimentale e di controllo) all'interno di un esperimento?", "a": "Garantire che le differenze tra i gruppi partecipanti riguardino solo aspetti accidentali", "block": "BLOCCO 4 — Causalità, esperimento, matrice dei dati"}, {"q": "Qual è la funzione principale dell'assegnazione casuale dei soggetti ai gruppi in un esperimento?", "a": "Garantire che la differenza tra i gruppi di partecipanti riguardi solo aspetti accidentali", "block": "BLOCCO 4 — Causalità, esperimento, matrice dei dati"}, {"q": "Quale filosofo e fisico ha definito la causalità come una categoria di “connessione genetica” o “modalità di produzione”?", "a": "(Mario) Bunge.", "block": "BLOCCO 4 — Causalità, esperimento, matrice dei dati"}, {"q": "Quale fisico e filosofo della scienza osserva che la categoria di causa necessita di essere espressa come “una categoria di connessione genetica”?", "a": "Bunge", "block": "BLOCCO 4 — Causalità, esperimento, matrice dei dati"}, {"q": "“Cluster sampling” è il nome inglese del", "a": "Campionamento a grappoli.", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "Le email survey sono", "a": "questionari riportati direttamente nel testo della mail che viene spedita alla persona intervistata", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "Cosa distingue tecnicamente una Email Survey da una Web Survey e dove si trova il questionario?", "a": "È un questionario inviato come file allegato (es. Word) direttamente nella mail; non c'è un link a un sito esterno.", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "In un'inchiesta campionaria, da cosa è contraddistinto in maniera rigida il disegno di ricerca e il questionario standardizzato?", "a": "Caratteristiche ben definite e sequenza immodificabile", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "La differenza interquartile è la differenza tra", "a": "I valori del terzo e del primo quartile", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "Le prime forme di Web Survey hanno fatto la loro comparsa negli", "a": "anni '90", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "Qual è la principale finalità della standardizzazione dello stimolo (le domande) all'interno di un'inchiesta campionaria (survey)?", "a": "Assicura la comparabilità delle risposte e la loro analisi statistica", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "La tecnica dell'inchiesta campionaria si presta ad una ricerca dalla finalità:", "a": "esplicativa", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "Qual è la principale funzione della rappresentatività di un campione?", "a": "La possibilità di generalizzare i risultati di un'inchiesta campionaria", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "Quale fattore, nello studio longitudinale di Sampson e Laub, funge da variabile processuale cruciale capace di mediare l'influenza della povertà e scongiurare un destino deviante nei giovani?", "a": "Ruolo della famiglia", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "Quali sono i nomi dei due pionieri della sociologia politica che, rispettivamente nel 1913 e nel 1937, hanno condotto ammirevoli studi storico-sociali basandosi esclusivamente sull'analisi di fonti statistiche ufficiali?", "a": "André Siegfried e Herbert Tingsten", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "Quali strumenti, “inventati” da Charles Spearman, sono criticati da Marradi perché non applicabili a tutti gli strumenti di raccolta dati e perché “etichettano” rigidamente un test?", "a": "Coefficienti di attendibilità", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "Secondo l'esperienza statunitense citata da Corbetta, quale è stata la modalità prevalente di somministrazione di un questionario dagli anni '30 agli anni '70?", "a": "Intervista faccia a faccia", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "Come osserva Corbetta, nella ricerca sociale profondità e ampiezza sono", "a": "inversamente correlate", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "Corbetta — rapporto fra ampiezza e profondità", "a": "Inversamente correlate (o relazione di segno negativo)", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "Di cosa soffre la procedura delle scale (scaling) dato che non esiste un'unità di misura esterna?", "a": "La soggettività.", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "Panel =", "a": "soggetti che accettano di essere ricontattati a intervalli di tempo per fornire informazioni in progressione sulla propria vita", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "Secondo Corbetta, il problema della reattività del soggetto studiato per un ricercatore sociale che segue l'approccio neopositivista", "a": "NON rappresenta un ostacolo di base", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "Un problema non trascurabile nelle interviste telefoniche è che", "a": "Anziani e persone con titolo di studio inferiore risultano in genere fortemente sottorappresentate.", "block": "BLOCCO 5 — Inchiesta campionaria, campionamento, scale"}, {"q": "“La modalità del caso che occupa il posto di mezzo nella distribuzione ordinata dei casi secondo quella variabile” è la definizione per", "a": "la mediana", "block": "BLOCCO 6 — Analisi dei dati, variabili, statistica"}, {"q": "Chi sono gli psicologi che hanno suggerito specifici usi del software per computer nei progetti di ricerca qualitativa?", "a": "Eben Weitzman e Matthew Miles.", "block": "BLOCCO 6 — Analisi dei dati, variabili, statistica"}, {"q": "Cosa faceva il centro Metodologico di Lodz in Polonia durante la dittatura comunista per garantire la fedeltà dei dati", "a": "eseguiva riesami sistematici dei questionari attraverso colloqui approfonditi con i rispondenti per appurarne la sincerità", "block": "BLOCCO 6 — Analisi dei dati, variabili, statistica"}, {"q": "L'ispezione preliminare delle distribuzioni di frequenza di tutte le variabili viene definita da Corbetta", "a": "controlli di plausibilità", "block": "BLOCCO 6 — Analisi dei dati, variabili, statistica"}, {"q": "L'istituzione del Sistema statistico nazionale (Sistan) aveva l'obiettivo di", "a": "coordinare tutte le competenze e le attività statistiche dei vari organismi della pubblica amministrazione", "block": "BLOCCO 6 — Analisi dei dati, variabili, statistica"}, {"q": "La tecnica della regressione logistica si adotta quando", "a": "la variabile dipendente è nominale o ordinale mentre la variabile indipendente è cardinale", "block": "BLOCCO 6 — Analisi dei dati, variabili, statistica"}, {"q": "Marradi usa il termine “concordanza” per definire", "a": "una relazione fra variabili categoriali", "block": "BLOCCO 6 — Analisi dei dati, variabili, statistica"}, {"q": "Per misurare la forza ed il segno di una eventuale relazione fra due variabili ordinali si usa preferibilmente la misura chiamata", "a": "gamma", "block": "BLOCCO 6 — Analisi dei dati, variabili, statistica"}, {"q": "Qual è l'obiettivo principale del Sistema Statistico Nazionale (SISTAN)?", "a": "Coordinare tutte le competenze e le attività statistiche disperse nei vari organismi.", "block": "BLOCCO 6 — Analisi dei dati, variabili, statistica"}, {"q": "Quale equilibrio deve saper mantenere l'intervistatore nell'interazione con l'intervistato, affinché non si alterino i dati qualitativi raccolti?", "a": "Empatia e distacco", "block": "BLOCCO 6 — Analisi dei dati, variabili, statistica"}, {"q": "Quale termine tecnico viene utilizzato in statistica sociale per indicare specificamente la concordanza o covariazione fra variabili ordinali?", "a": "Cograduazione", "block": "BLOCCO 6 — Analisi dei dati, variabili, statistica"}, {"q": "Quale valore caratteristico (misura di tendenza centrale) si può calcolare per le variabili ordinali (oltre che cardinali), ma non per quelle nominali?", "a": "La Mediana.", "block": "BLOCCO 6 — Analisi dei dati, variabili, statistica"}, {"q": "Quali variabili si limitano a distinguere gli stati di una proprietà senza stabilire gerarchie o distanze misurabili?", "a": "Nominali", "block": "BLOCCO 6 — Analisi dei dati, variabili, statistica"}, {"q": "Un dettagliato elenco di usi per software del computer in progetti di ricerca qualitativa (del tipo detto CAQDAS) è stato suggerito da", "a": "Weitzman e Miles", "block": "BLOCCO 6 — Analisi dei dati, variabili, statistica"}, {"q": "Marradi segnala che fattori umani possono compromettere la fedeltà dei dati", "a": "se una domanda invita l'intervistato a ricordare azioni o situazioni passate, la memoria presenta distorsioni sistematiche, nel senso che si tende ad avvicinare nel tempo alcuni tipi di eventi e allontanarne altri.", "block": "BLOCCO 6 — Analisi dei dati, variabili, statistica"}, {"q": "Quando può essere opportuno procedere con un'analisi manuale dei dati, senza ricorrere a software statistici?", "a": "Quando il set di dati è piccolo", "block": "BLOCCO 6 — Analisi dei dati, variabili, statistica"}, {"q": "Gli strumenti che aiutano i ricercatori nell'analisi", "a": "Software di analisi di testo", "block": "BLOCCO 6 — Analisi dei dati, variabili, statistica"}, {"q": "Nella ricerca qualitativa il disegno della ricerca è", "a": "Destrutturato e aperto", "block": "BLOCCO 6 — Analisi dei dati, variabili, statistica"}, {"q": "Chi è lo studioso che ha elaborato la celebre classificazione che individua le quattro situazioni sociali specifiche in cui la tecnica dell'osservazione partecipante garantisce i risultati conoscitivi migliori?", "a": "Danny Jorgensen", "block": "BLOCCO 7 — Tecniche qualitative: osservazione, intervista, focus group"}, {"q": "Come viene definita in inglese la specifica procedura di reclutamento dei membri di un focus group che avviene tramite l'individuazione guidata da parte di esperti o “testimoni qualificati”?", "a": "Nomination", "block": "BLOCCO 7 — Tecniche qualitative: osservazione, intervista, focus group"}, {"q": "Il celebre lavoro di Thomas e Znaniecki, basato su un'autobiografia ed altri documenti, si intitola", "a": "“The Polish peasant in Europa and America”", "block": "BLOCCO 7 — Tecniche qualitative: osservazione, intervista, focus group"}, {"q": "Il sociologo Merton sviluppò negli anni '40 la tecnica che oggi è il focus group, definendola", "a": "focus interview", "block": "BLOCCO 7 — Tecniche qualitative: osservazione, intervista, focus group"}, {"q": "Quale compito metodologico fondamentale spetta al moderatore durante la pianificazione e l'esecuzione di un focus group?", "a": "Deve stabilire lo stile di conduzione più adatto in base agli scopi prefissi", "block": "BLOCCO 7 — Tecniche qualitative: osservazione, intervista, focus group"}, {"q": "Quale studio del 1984, condotto da Morgan e Spanish, segnò la “riscoperta” e il rilancio del Focus Group nelle scienze sociali?", "a": "Uno studio sulla percezione dei fattori di rischio responsabili dell'attacco cardiaco.", "block": "BLOCCO 7 — Tecniche qualitative: osservazione, intervista, focus group"}, {"q": "Quali strumenti consentono di estrarre automaticamente dati da pagine web e forum online?", "a": "Web scraping.", "block": "BLOCCO 7 — Tecniche qualitative: osservazione, intervista, focus group"}, {"q": "Secondo alcuni studiosi è utile usare i gruppi preesistenti per comporre un focus group, e fra i vantaggi vi è", "a": "la ricostruzione naturale dei contesti nei quali si sviluppano idee e decisioni", "block": "BLOCCO 7 — Tecniche qualitative: osservazione, intervista, focus group"}, {"q": "Secondo la letteratura scientifica precedente alla ricerca di Jankowski, in quali termini veniva interpretata la gang?", "a": "Disorganizzazione sociale", "block": "BLOCCO 7 — Tecniche qualitative: osservazione, intervista, focus group"}, {"q": "In base ai dati raccolti Jankowski sostiene che l'adesione ad una gang è frutto di", "a": "una scelta cosciente basata su una valutazione razionale di pro e contro", "block": "BLOCCO 7 — Tecniche qualitative: osservazione, intervista, focus group"}, {"q": "Nel corso della sua approfondita ricerca etnografica in incognito sulle gang urbane, in che modo Jankowski raccoglieva principalmente i propri dati?", "a": "Registrazione appunti su taccuino", "block": "BLOCCO 7 — Tecniche qualitative: osservazione, intervista, focus group"}, {"q": "Chi sono i fondatori (o gli ideatori) della Grounded Theory?", "a": "Barney G. Glaser e Anselm L. Strauss.", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "La Grounded Theory è stata sviluppata dai sociologi statunitensi", "a": "Glaser e Strauss", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "Come è stato osservato, il processo di condurre uno studio di ricerca con la Grounded Theory è", "a": "Iterativo e ricorsivo", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "Come vengono considerati metodologicamente la Nominal Group Technique (NGT) e il Metodo Delphi l'uno rispetto all'altro?", "a": "Distinti ma complementari", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "I ricercatori che hanno sviluppato il metodo “Delphi” sono stati", "a": "Olaf Helmer e Norman Dalkey", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "In quali contesti la Nominal Group Technique (NGT) trova applicazione oltre alle scienze sociali, come citato nelle fonti?", "a": "Pianificazione urbana (insieme a Tecnologia dell'Informazione, Salute, Educazione).", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "In quale decennio si possono storicamente collocare le origini della “Mixed Methods Research” e l'auspicata tregua fra paradigma quantitativo e qualitativo?", "a": "Anni '80 e '90", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "Le origini dei mixed methods si possono collocare nel corso degli anni", "a": "80 e 90", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "In quale periodo storico si collocano le origini della proposta di una “tregua” tra paradigmi e l'avvio dei Mixed Methods?", "a": "Anni '80 e '90.", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "Un elemento imperativo per i ricercatori nell'esplorare il campo della ricerca mixed methods è", "a": "un ampio spettro di competenze e la padronanza di varie tecniche di ricerca", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "Nei confronti dei consigli contingenti di Creswell per “usare domande aperte senza riferimento alla teoria o alla letteratura” si dovrebbe (1)", "a": "Usare discrezionalità.", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "Nei confronti dei consigli contingenti di Creswell per “usare domande aperte senza riferimento alla teoria o alla letteratura” si dovrebbe (2)", "a": "Usare cautela", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "Nei confronti dei consigli contingenti di Creswell per “usare domande aperte senza riferimento alla teoria o alla letteratura” si dovrebbe (3)", "a": "Coinvolgere selettivamente esperti di alta competenza nella definizione delle priorità di sviluppo (o la comunità locale)", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "Nel contesto della pianificazione urbana la Nominal Group Technique permette di (1)", "a": "Coinvolgere selettivamente esperti di alta competenza nella definizione delle priorità di sviluppo (o la comunità locale).", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "Nel contesto della pianificazione urbana la Nominal Group Technique permette di (2)", "a": "coinvolgere attivamente la comunità locale nella definizione delle priorità di sviluppo", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "Qual è la funzione essenziale del rigoroso anonimato e della generazione individuale delle idee nella Nominal Group Technique e nel Metodo Delphi?", "a": "Garantire che ciascuna voce sia considerata senza influenzare altri membri", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "Qual è la quarta e ultima fase della Nominal Group Technique?", "a": "Valutazione e votazione mediante tecniche apposite", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "Qual è uno dei vantaggi principali dell'applicazione della Nominal Group Technique (NGT) o di Metodi Creativi nell'ambito dello sviluppo del personale e del team building clinico?", "a": "Favorisce un ambiente di lavoro efficace e collaborativo, coinvolgendo professionisti sanitari", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "Secondo l'approccio induttivo della Grounded Theory, in quale momento specifico deve avvenire il campionamento teorico?", "a": "Deve essere effettuato durante la ricerca", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "Che cos'è uno Storyboard?", "a": "Fumetto.", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "Nelle tecniche creative e di design thinking, come viene definito lo Storyboard?", "a": "Una sorta di “fumetto”.", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "Per quale scopo sono sempre più riconosciuti i Metodi Creativi nel contesto sanitario?", "a": "Migliorare l'esperienza del paziente.", "block": "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods"}, {"q": "Un ulteriore nodo etico riguarda il divario digitale (digital divide)", "a": "Se l'accesso e le competenze digitali non sono distribuiti equamente, si rischia di accentuare disuguaglianze sociali preesistenti.", "block": "BLOCCO 9 — Netnografia, Big Data, Web Survey, Network Analysis"}, {"q": "Chi ha definito la cybercultura come “l'insieme delle tecnologie (materiali e intellettuali), delle pratiche, degli atteggiamenti, dei modi di pensiero e dei valori che si sono sviluppati insieme alla crescita del cyberspazio”?", "a": "Pierre Lévy (2001).", "block": "BLOCCO 9 — Netnografia, Big Data, Web Survey, Network Analysis"}, {"q": "Come osserva il sociologo Meyrowitz, a causa della rivelazione dei comportamenti tra le quinte degli attori di status sociale superiore, i media elettronici", "a": "Indeboliscono tutto il sistema di gerarchia a scala e di autorità delegata.", "block": "BLOCCO 9 — Netnografia, Big Data, Web Survey, Network Analysis"}, {"q": "I Playspaces sono", "a": "forum di comunicazione in cui una o più persone interagiscono socialmente attraverso il formato strutturato del gioco di ruolo", "block": "BLOCCO 9 — Netnografia, Big Data, Web Survey, Network Analysis"}, {"q": "L'autrice di Personal Connections in the Digital Age è", "a": "Nancy Baym", "block": "BLOCCO 9 — Netnografia, Big Data, Web Survey, Network Analysis"}, {"q": "L'etica nella netnografia contribuisce a garantire", "a": "la riservatezza e il rispetto", "block": "BLOCCO 9 — Netnografia, Big Data, Web Survey, Network Analysis"}, {"q": "Nel settore della sanità, i big data alimentano progressi relativamente a", "a": "la diagnosi personalizzata e l'ottimizzazione delle risorse sanitarie", "block": "BLOCCO 9 — Netnografia, Big Data, Web Survey, Network Analysis"}, {"q": "Nella Network Analysis i nodi centrali vengono definiti", "a": "hubs", "block": "BLOCCO 9 — Netnografia, Big Data, Web Survey, Network Analysis"}, {"q": "Per cosa sta l'acronimo KDD, una delle attività fondamentali nell'ambito dell'elaborazione e analisi dei Big Data?", "a": "Knowledge discovery from data", "block": "BLOCCO 9 — Netnografia, Big Data, Web Survey, Network Analysis"}, {"q": "Nodi centrali della struttura della rete", "a": "hubs", "block": "BLOCCO 9 — Netnografia, Big Data, Web Survey, Network Analysis"}, {"q": "In quale periodo si afferma lo sviluppo delle reti telematiche che anticipano la diffusione di Internet nella società contemporanea?", "a": "Anni '80", "block": "BLOCCO 9 — Netnografia, Big Data, Web Survey, Network Analysis"}, {"q": "Achille Ardigò ha compreso l'importanza fondamentale di internet nel settore sanitario fin da", "a": "gli anni '80", "block": "BLOCCO 10 — Sociologia sanitaria, welfare, Terzo Settore"}, {"q": "In quale contesto storico e geografico si fanno risalire le prime forme di protezione sociale sistematica (Welfare State)?", "a": "Germania di Bismarck.", "block": "BLOCCO 10 — Sociologia sanitaria, welfare, Terzo Settore"}, {"q": "Provvedimento legislativo per il terzo settore", "a": "L. 266/91", "block": "BLOCCO 10 — Sociologia sanitaria, welfare, Terzo Settore"}, {"q": "Uno degli sviluppi teorici nella sociologia della salute degli anni '90 è stato il", "a": "costruzionismo sociale", "block": "BLOCCO 10 — Sociologia sanitaria, welfare, Terzo Settore"}, {"q": "Come osserva Piergiorgio Corbetta, all'inizio del XVII secolo fu l'inglese Francis Bacon (Francesco Bacone) a distinguere fra", "a": "L'esperienza osservativa ed esperienza provocata", "block": "BLOCCO 11 — Varie / non classificabili"}, {"q": "Il “panel” è un gruppo di soggetti che", "a": "accettano di essere ricontattati ad intervalli di tempo più o meno lunghi", "block": "BLOCCO 11 — Varie / non classificabili"}, {"q": "L'osservatore è interessato (NB: il Paniere riporta una formulazione simile riferita alla “cultura” anziché alla “comunità” — verificare)", "a": "agli effetti che la sua ricerca avrà nella comunità stessa", "block": "BLOCCO 11 — Varie / non classificabili"}, {"q": "Nel corso dell'ottocento, i primi psicologi a tentare vari esperimenti per misurare i comportamenti e la psiche umana furono", "a": "i tedeschi", "block": "BLOCCO 11 — Varie / non classificabili"}];
+const PANIERE_POOL = {"BLOCCO 1 — Metodo, metodologia, tecnica": ["Procedimento", "Cartesio", "Matematiche, fisiche e naturali", "Induttivo", "flessibilità e prontezza rispetto alle varie situazioni", "Mills", "Scientismo", "Aperta", "Ipotetico-deduttivo", "gli studiosi più orientati alla ricerca empirica", "Corpo organico di tecniche", "riflessione sul metodo", "un complesso più o meno codificato di norme e modi di procedere", "un interscambio: la conoscenza delle scienze contro l'esperienza delle tecniche", "Marradi", "Si concentravano su una dimensione essenzialmente teorica", "Chi coltiva acriticamente le tecniche della ricerca empirica", "Labovitz", "L'epistemologia è parte della gnoseologia", "L'epistemologia", "metodologia", "fallibile", "Rorty", "Un'evoluzione del positivismo del Novecento", "Russell", "la semantica estensionale", "behaviorismo", "Bridgman", "Popper", "perfetta", "empirismo", "il collegamento fra termini e concetti è mutevole nello spazio e nel tempo per via della natura stessa dei concetti", "non c'è alcuna garanzia a priori che useranno la stessa parola con lo stesso significato in ogni circostanza", "dell'etnometodologia", "più imprecisa di quella del linguaggio ordinario", "interattivo, ossia basato su un'influenza reciproca", "Crespi"], "BLOCCO 2 — Conoscenza, linguaggio, concetti": ["La metà della somma del valore minimo e del valore massimo della distribuzione", "le forme viventi non ammettono rigorose linee di demarcazione", "Reazioni all'ambiente fisico perlopiù inconsce", "le nuove possibilità classificatorie che emergono attraverso internet", "della scienza", "conoscenza dell'universale", "Chris Anderson", "Fenomenologia sociologica", "Linguaggio delle variabili", "Problematico", "Connettografia", "varianza", "Filosofia della scienza", "domande descrittive, domande strutturali e domande contrasto", "Le scienze non ammettono rigorose linee di demarcazione assolute", "epistemologia certista e gnoseologia realista", "Il livello di significatività del test dell'ipotesi nulla", "Nomination", "Marradi", "Tre categorie", "niente corrisponde ad una radice quadrata", "non vi era nessuna corrispondenza", "Hilbert", "non ha un vero e proprio oggetto ed è un'invenzione umana", "corrette o scorrette", "Corbetta", "intensione del concetto", "un determinato ambito spazio-temporale", "nucleo e procedure per identificare i referenti", "la maggior parte dei concetti che usiamo nella vita quotidiana", "costruzioni mentali sviluppate per scopi più o meno specifici", "tipizzazione", "sono prodotti dalla società", "un processo generalmente inconscio e mai deliberato", "parziale", "una minore ampiezza della sua estensione", "i concetti definiti generi", "la mutua esclusività di ciascuna coppia di classi e l'esaustività dell'insieme delle classi", "un obiettivo assai difficile da raggiungere in molte situazioni", "tipo", "aggregare due o più tipi semanticamente vicini in uno", "determinante", "un tàxon in una tassonomia", "non possono essere pensate come vere o false", "assai difficilmente esplicitabile", "riferita alla realtà empirica", "mostrato vero o falso con un adeguato controllo empirico", "essere effettivamente dimostrato vero", "un numero illimitato di oggetti", "un numero molto elevato di conferme non è mai sufficiente a verificare in modo conclusivo un'asserzione universale", "un significato che il suo autore intende dare", "stipulative", "inutile", "è una nozione altamente astratta", "la plausibilità", "che è credibile ma logicamente viziata e quindi falsa", "Galileo Galilei", "la scienza in tutti i suoi campi si basa su leggi e generalizzazioni", "nella prima metà del Novecento"], "BLOCCO 3 — Paradigmi, positivismo, interpretativismo": ["Corbetta", "relazioni fra variabili degli oggetti di ricerca in generale", "Ricolfi", "Windelband", "interazionismo simbolico", "una forte dipendenza dal contesto", "viene dopo l'acquisizione della consapevolezza tecnica", "trovassero anzitutto conferma nella prassi della ricerca stessa", "la struttura concettuale attraverso la quale gli scienziati guardano al mondo", "fisica", "orientamenti e criteri di scelta", "è qualcosa di meno che la scienza", "l'economia", "Friedrichs", "una maggiore resa cognitiva", "Una parola greca", "le particolari interpretazioni del mondo proprie del ricercatore", "visione del mondo", "oggettivismo", "un realismo ingenuo", "costruttivismo e relativismo", "il rapporto dell'uomo con il mondo", "probabilistiche", "tecniche manipolative", "di un atteggiamento empatico da parte dello studioso", "Auguste Comte", "gli apparati concettuali, i procedimenti e le tecniche delle scienze naturali", "ha trattato non di cose, ma di concetti", "modi di agire, di pensare e di sentire che esistono al di fuori delle coscienze individuali", "l'esistenza di un ordine e di principi universali nella natura", "romanticizzazione della scienza", "linguaggio delle variabili", "la possibilità che venga smentita dai fatti dell'esperienza anche una sola volta", "è carica di teoria", "possono essere impiegate con un ruolo subalterno rispetto alle tecniche quantitative", "storicismo", "le scienze della natura e le scienze dello spirito, ossia umane", "una costruzione dell'uomo", "una scienza di realtà", "l'avalutatività e la possibilità di arrivare a enunciati con qualche carattere di generalità", "un principio di scelta che stabilisce il campo della ricerca", "una costruzione concettuale per la misurazione e la caratterizzazione sistematica di connessioni individuali", "una questione di connessioni causali concrete", "teoria dei frame", "applicò le concezioni weberiane fino in fondo nella ricerca empirica", "una diagnosi su cui esiste una larga convergenza fra gli studiosi", "prima induttiva e poi deduttiva", "tre fasi", "una raccolta di una congerie sterminata di dati scoordinati e poco utili a livello conoscitivo", "le categorie osservative sono indipendenti da quelle teoriche", "un soggetto attivo nella costruzione del mondo mediante il suo bagaglio di conoscenza", "sociologia neocomprendente", "il rifiuto di giungere a generalizzazioni e l'eccesso di immedesimazione con i soggetti studiati", "psicologia sociale", "l'esaltazione dell'altro, del diverso, delle minoranze", "Émile Durkheim e Max Weber", "un confronto vivace e fruttuoso fra le due parti", "un sostanziale equilibrio", "longitudinale", "una pianificazione della ricerca", "condotta su dati già raccolti da altri studiosi o istituzioni", "variabile dipendente", "regressione multipla", "variabili processuali", "il controllo e la cura da parte dei genitori verso i soggetti", "la Scuola di Chicago"], "BLOCCO 4 — Causalità, esperimento, matrice dei dati": ["Aristotele", "un divario che non può mai essere colmato in maniera del tutto soddisfacente", "connessione genetica", "covariazione", "tre aspetti", "direzione della causalità", "non può mai essere addotta come unica prova empirica a suo sostegno", "il mantenimento di tutte le altre variabili rilevate costanti", "relazione spuria", "controllo e depurazione", "viene condotto con adattamenti o comunque in forme particolari", "problema dell'inferenza causale", "invarianza ed equivalenza", "implausibili per gli esseri umani, ma plausibili per gli oggetti inanimati", "differenti solo per aspetti accidentali", "randomizzazione", "isolamento e flessibilità", "tre categorie", "Pheterson, Kiesler e Goldberg", "in una scuola", "l'analisi della covariazione nel suo naturale realizzarsi", "varianza", "case-based", "paura, ambizione, frustrazione, esibizione", "tabella e narrazione", "L'attivista di partito", "generalizzazioni e sintesi di ordine superiore, che siano spiegazioni o interpretazioni", "la profondità dello scavo nel vissuto dei soggetti studiati", "tre posizioni", "riduzionismo", "uno strumento molto utile in uno stadio finale del processo di ricerca", "i neopositivisti si sono impossessati della natura soggettiva del Verstehen", "contesto della scoperta", "una constatazione pragmatica sui contributi preziosi di entrambi gli approcci", "l'adeguatezza a rispondere allo specifico problema posto dalla ricerca", "non possono essere impiegati facilmente né nella stessa ricerca né da parte del medesimo ricercatore", "Patton", "si potrà raggiungere una verità più completa rispetto all'oggetto della ricerca"], "BLOCCO 5 — Inchiesta campionaria, campionamento, scale": ["popolazione di riferimento", "rappresentativo", "le stesse per tutti, nello stesso ordine e con la stessa formulazione", "puramente esplorativa", "survey", "la standardizzazione", "intervista strutturata e intervista libera", "Neyman", "uno spazio esorbitante", "dagli anni '30 agli anni '70", "un certo livello di saturazione dei cittadini nei confronti delle interviste", "CAPI", "guardarsi dall'esprimere approvazione o disapprovazione per le affermazioni del soggetto", "le sue aspettative", "brevi, concisi e il più semplici possibile", "la rappresentatività del campione", "l'intervista telefonica aveva quasi completamente sostituito l'intervista faccia-a-faccia", "per motivazioni di carattere economico", "digital divide", "inferenza", "probabilistico", "impossibile", "sorteggio", "campionamento casuale sistematico", "suddivisa in maniera naturale in gruppi di unità spazialmente contigue", "campionamento stratificato", "campionamento a scelta ragionata", "si ricorre agli stessi intervistati per coinvolgerne altri", "di significato", "socio-demografiche", "ricostruire il concetto complesso originario", "item", "atteggiamento", "Likert e Guttman", "variabili categoriali", "quasi-cardinali", "a parziale autonomia semantica", "Cantril e Free", "un buon giornalista", "Islands in the Street", "l'osservazione partecipante", "Los Angeles, New York e Boston", "essere ripetutamente fermato dalla polizia", "la registrazione di appunti su un taccuino", "una scelta cosciente basata su una valutazione razionale di pro e contro", "carattere individualistico e ribelle", "la capacità di stabilire legami con la comunità", "un'analisi sistematica della letteratura scientifica attinente al tema", "aperta e interattiva: elaborazione teorica e ricerca empirica si intrecciano", "operativizzazione", "concetti definitivi", "un approccio in cui il ricercatore si astiene da qualsiasi manipolazione o disturbo", "una immedesimazione empatica", "rigidamente strutturato e chiuso", "si basa su una prospettiva comparata", "statistica", "l'evoluzione della rilevanza teorica dei concetti durante la ricerca", "la fase dell'analisi dei dati", "Early predictors of adolescent aggression and adult violence", "di tipo qualitativo (interviste e registri giudiziari) ma sottoposti a codifica"], "BLOCCO 6 — Analisi dei dati, variabili, statistica": ["mantenendo un equilibrio nell'atteggiamento empatico, senza eccessi", "fedele", "definizione operativa", "desiderabilità sociale", "non può distinguere fra opinioni passeggere e opinioni consolidate nel tempo", "response set", "Campbell e Fiske", "controlli di plausibilità", "controllo di congruenza", "coefficienti di attendibilità", "operativizzazione", "analisi delle variabili e delle loro relazioni", "descrittiva", "distribuzione di frequenza", "relativa", "distribuzione cumulata di frequenza", "percentuale valida", "distribuzione bimodale", "nominali", "varianza", "la relazione fra variabili nominali", "George Udny Yule", "stimolo e risposta", "unidirezionale", "entrambe ordinali o cardinali", "l'esistenza di una relazione fra due variabili, la sua forza, la sua forma e il suo eventuale segno", "una semplificazione estrema della realtà, ma comunque un necessario punto di partenza", "concomitante", "aprire un regresso all'infinito", "la relazione fra variabili cardinali", "distribuzione congiunta", "quattro possibili combinazioni", "tabulazione incrociata", "ai totali di ogni stato delle due variabili e al totale generale", "a 5 punti percentuali", "V di Cramèr", "gamma", "la variazione della variabile dipendente per ciascuna variazione della variabile indipendente", "la variabile dipendente è cardinale mentre la variabile indipendente è nominale o ordinale", "tre tipi di suicidio", "l'eliminazione delle persone di età inferiore ai 16 anni dal conteggio", "nell'integrazione sociale", "Ghilini", "la produzione, l'unità di analisi, il contenuto e l'ampiezza della rilevazione", "una rilevazione diretta o indiretta", "l'unità di analisi", "opinioni, atteggiamenti e motivazioni", "1926", "sul lavoro"], "BLOCCO 7 — Tecniche qualitative: osservazione, intervista, focus group": ["Malinowski", "relativamente lungo", "Scuola di Chicago", "sociologia autobiografica", "studi di comunità", "le istituzioni sanitarie", "paradosso dell'osservatore", "mediatore culturale", "nel corso della ricerca stessa", "quotidianamente, ma al termine della giornata trascorsa con i soggetti", "flessibile e non standardizzato", "dimostrare la validità scientifica della ricerca", "esprimere il loro modo di sentire con le loro parole", "tre tipi di intervista", "all'approccio standard", "intervista guidata", "molto esperto e preparato", "osservatori privilegiati o testimoni privilegiati", "stabilire con lui un rapporto di fiducia come persona", "domande primarie e domande secondarie", "da quando i sociologi hanno iniziato a raccogliere dati", "focused interview", "negli anni '80", "una discussione di gruppo", "la ricostruzione naturale dei contesti nei quali si sviluppano idee e decisioni", "dell'omogeneità e della reciproca estraneità", "6", "pensino che alcune opinioni siano preferibili ad altre", "focus group virtuali", "interviste individuali in profondità o inchieste campionarie", "materiale informativo su un determinato fenomeno sociale", "storiografia", "informazioni non reattive", "assolutamente abbondante", "mediante commissione a un immigrato polacco dietro pagamento", "il documento personale per eccellenza", "storie di vita e storia orale", "una base empirica valida per lo studio della realtà contemporanea", "documenti aziendali ed amministrativi", "oltre 7.000 sentenze di separazione legale e di divorzio, attinte dai tribunali di Milano, Bologna e Catania"], "BLOCCO 8 — Grounded Theory, Delphi, NGT, Mixed Methods": ["da 5 a 20", "ottenere un consenso o una stabilità nelle risposte", "guidare il processo e presentare risultati", "per mantenere l'anonimato degli esperti", "raggiungere un consenso o identificare tendenze comuni", "una tecnica di previsione militare", "pianificazione strategica", "utilizzare checklist standardizzate", "per la sua natura iterativa e adattabilità", "la gestione efficiente senza riunioni fisiche frequenti", "anni '60", "ridurre l'influenza sociale", "il team building", "generazione individuale delle idee", "comprendere meglio le idee presentate", "il coinvolgimento del paziente nel processo decisionale", "identificare le soluzioni più promettenti o rilevanti", "perché coinvolge una discussione strutturata", "distinti ma complementari", "generare teorie basate sui dati", "al punto in cui i nuovi dati non forniscono nuove informazioni significative", "l'incremento della sensibilità teorica", "la generazione della teoria basata sui dati raccolti", "il confronto continuo dei dati per identificare somiglianze e differenze", "esperienze significative per lo sviluppo della teoria", "la documentazione di riflessioni, idee e connessioni durante la ricerca", "classificare i dati", "in diverse discipline", "soggettività del ricercatore", "sbloccare il potenziale creativo", "design thinking", "la narrazione visiva", "brainstorming", "mind mapping", "hackathon", "il visual storytelling", "brainstorming e mind mapping", "promuovere la collaborazione e la comunicazione efficace", "integrare metodi qualitativi e quantitativi", "integrare la profondità con la generalizzabilità", "richiedendo una formazione adeguata e trasparenza nel processo di ricerca", "l'accettazione della compatibilità tra metodi di ricerca quantitativi e qualitativi", "flessibilità mentale nell'interpretare risultati ottenuti da diversi metodi", "integrare informazioni quantitative e qualitative in una sintesi complessiva", "l'utilizzo di più di un metodo in uno studio, senza necessariamente integrarli e indipendentemente dalla loro natura qualitativa o quantitativa", "influisce su tutti gli aspetti della ricerca", "natura della ricerca e le sue esigenze conoscitive"], "BLOCCO 9 — Netnografia, Big Data, Web Survey, Network Analysis": ["rete", "la connessione tra nodi", "visualizzare relazioni", "relazioni tra individui in un gruppo sociale", "le catene di approvvigionamento per la produzione e la distribuzione di beni", "esaminare le interazioni tra proteine nelle cellule", "una rappresentazione delle relazioni tra attori coinvolti in attività illegali o criminali", "la closeness", "i nodi con il maggior numero di connessioni", "Gephi e NetworkX", "nella ricerca sociale", "uno strumento di indagine online", "l'inclusione di elementi multimediali", "dati in tempo reale", "il monitoraggio del tasso di risposta", "nella progettazione accurata del questionario", "l'illustrazione dell'importanza della partecipazione", "individuare eventuali problemi nel questionario", "l'interpretazione dei risultati", "archiviazione", "anni '90", "enormi volumi di dati di vario tipo (testi, immagini, suoni)", "5G (quinta generazione)", "Volume, Velocity, Variety", "la precisione temporale necessaria per l'analisi dei dati", "le machine learning, tecnologie di archiviazione distribuita", "la sicurezza informatica", "generare sfiducia e insicurezza nel pubblico", "mitigare rischi di frodi e furto di identità", "può aggravare le disuguaglianze esistenti nella società", "si sposta nel mondo virtuale per analizzare interazioni online", "Kozinets", "per comprendere opinioni dei consumatori e dinamiche di mercato online", "esplorare le dinamiche sociali online", "la copia diretta delle comunicazioni mediate dal computer", "la selezione del contesto online e la definizione degli obiettivi di ricerca", "contribuisce a garantire la riservatezza e il rispetto dei partecipanti", "la struttura delle connessioni sociali all'interno delle comunità", "per tracciare le attività sociali dei partecipanti", "i software di analisi del testo", "Senso di appartenenza", "Web 1.0", "Rheingold", "Civilizzazione", "Comunicazione", "Per rafforzare legami esistenti", "Che offline e online sono in costante relazione", "un coinvolgimento preliminare con il fenomeno studiato", "una conoscenza pregressa della community", "scegliere luoghi non ancora battuti", "deve essere affinato durante la ricerca", "favorisce un irrigidimento della comunità online", "no, perché può tracciare ulteriori sviluppi", "Aggiornare la domanda di ricerca", "domande a risposta aperta", "un luogo", "asincroni", "micro blog", "convergere", "attraverso i motori di ricerca", "quando ci sono comunicazioni regolari e recenti", "eterogenee", "FAQ", "lasciate la community", "avvengono contestualmente", "visibile", "le relazioni tra utenti depositate negli archivi della community", "una riproduzione fedele di ciò che appare sullo schermo", "una semplice conversazione", "dipende dalla capacità interpretativa del ricercatore", "deve essere usato come parte della ricerca", "induttivo", "la trasformazione di note sul campo in codici e categorie", "l'integrazione di dati codificati tenendo conto dei contesti e delle strategie", "ricercando la coerenza ed evitando contraddizioni", "analisi ermeneutica", "interpreta i dati", "completezza dei dati analizzati", "vulnerabilità degli archivi"], "BLOCCO 10 — Sociologia sanitaria, welfare, Terzo Settore": ["comprende sia gli aspetti istituzionali ed organizzativi sia le dimensioni culturali, sociali e psicologiche", "due fasi principali di sviluppo", "sociologo", "costruzionismo sociale", "sociologia relazionale", "l'introduzione di un'impostazione connessionista e sistemica mediante un modello a quadrilatero", "studiato le condizioni di vita e di lavoro nelle fabbriche analizzando il loro impatto sulla salute dei lavoratori", "deospedalizzando attraverso progetti e-Care", "il miglioramento dell'accessibilità ai servizi sanitari", "il rischio di fai-da-te da parte dei pazienti", "l'insieme delle organizzazioni non profit, forme di volontariato e iniziative della società civile", "Titmuss", "l'insieme delle politiche, dei servizi e degli interventi (pubblici e non) miranti a garantire il benessere e la sicurezza sociale dei cittadini", "il principio di eguaglianza", "identificare le disparità nella distribuzione dei benefici e sviluppare politiche più inclusive", "la valutazione dell'impatto delle politiche sociali sulla qualità della vita e sul benessere dei destinatari", "l'efficacia delle iniziative delle organizzazioni Terzo Settore", "studiando gli effetti delle crisi sulle condizioni di vita delle persone", "la legge-quadro 266/1991", "il cambiamento nei modelli di partecipazione civica e volontariato"], "BLOCCO 11 — Varie / non classificabili": ["Procedimento", "Cartesio", "Matematiche, fisiche e naturali", "Induttivo", "flessibilità e prontezza rispetto alle varie situazioni", "Mills", "Scientismo", "Aperta", "Ipotetico-deduttivo", "gli studiosi più orientati alla ricerca empirica", "Corpo organico di tecniche", "riflessione sul metodo", "un complesso più o meno codificato di norme e modi di procedere", "un interscambio: la conoscenza delle scienze contro l'esperienza delle tecniche", "Marradi", "Si concentravano su una dimensione essenzialmente teorica", "Chi coltiva acriticamente le tecniche della ricerca empirica", "Labovitz", "L'epistemologia è parte della gnoseologia", "varianza", "case-based", "paura, ambizione, frustrazione, esibizione", "tabella e narrazione", "L'attivista di partito", "generalizzazioni e sintesi di ordine superiore, che siano spiegazioni o interpretazioni", "la profondità dello scavo nel vissuto dei soggetti studiati", "tre posizioni", "riduzionismo", "uno strumento molto utile in uno stadio finale del processo di ricerca", "i neopositivisti si sono impossessati della natura soggettiva del Verstehen", "contesto della scoperta", "una constatazione pragmatica sui contributi preziosi di entrambi gli approcci", "l'adeguatezza a rispondere allo specifico problema posto dalla ricerca", "non possono essere impiegati facilmente né nella stessa ricerca né da parte del medesimo ricercatore", "Patton", "si potrà raggiungere una verità più completa rispetto all'oggetto della ricerca"]};
+const SHAPE_POOLS = {"persons": ["Achenwall", "Aristotele", "Auguste Comte", "Bridgman", "Bunge", "Campbell e Fiske", "Cantril e Free", "Cartesio", "Chris Anderson", "Corbetta", "Crespi", "Danny Jorgensen", "Friedrichs", "Galileo Galilei", "George Udny Yule", "Ghilini", "Glaser e Strauss", "Harold Garfinkel", "Hilbert", "Karl Marx", "Kozinets", "Labovitz", "Likert e Guttman", "Malinowski", "Marradi", "Mills", "Nancy Baym", "Neyman", "Patton", "Popper", "Rheingold", "Ricolfi", "Rorty", "Russell", "Simmel", "Thurstone", "Titmuss", "Weitzman e Miles", "Windelband", "Yule", "Kuhn", "Weber", "Durkheim", "Sartori", "Schutz", "Mead", "Goffman", "Dilthey", "Spradley", "Jevons", "Jankowski", "Spearman", "Garfinkel", "Lazarsfeld", "Pierre Lévy", "David Weinberger", "Meyrowitz", "Cipolla", "Cardano", "Gallino", "Bryman", "Blalock", "Merton", "Morgan", "Helmer e Dalkey"], "numbers_decades": ["1926", "3 categorie", "4 fasi", "6", "80 e 90", "Anni '80", "Anni '80 e '90", "anni '60", "anni '90", "dagli anni '30 agli anni '70", "gli anni '80", "negli anni '80", "2 categorie", "5 fasi", "7 fasi", "da 5 a 20", "14", "10 categorie", "2008", "1991", "1989", "1984", "1959", "1935", "1913", "1937"], "yesno": ["Sì", "No", "Dipende"], "country_ruler": ["Germania di Bismarck.", "Italia dei Savoia", "Inghilterra di Churchill", "Francia di Napoleone III", "Spagna di Franco", "Austria di Francesco Giuseppe", "Russia di Stalin", "Prussia di Federico il Grande"]};
+
+function classifyShape(answer) {
+  const a = answer.trim();
+  const al = a.toLowerCase();
+  if (al === 'sì' || al === 'sì.' || al === 'no' || al === 'no.') return 'yesno';
+  if (/^\d+$/.test(a.replace(/\.$/, ''))) return 'numbers_decades';
+  if (/anni\s*'?\d|^\d{4}$|decennio/.test(al)) return 'numbers_decades';
+  if (/\bdi\s+[A-ZÀ-Ý]/.test(a) && a.split(' ').length <= 5 && /^[A-ZÀ-Ý]/.test(a)) return 'country_ruler';
+  if (SHAPE_POOLS.persons.includes(a)) return 'persons';
+  return null;
+}
+
+// Numero di parole di una risposta, per valutarne la "lunghezza/struttura"
+function wordCount(s) {
+  return s.trim().split(/\s+/).filter(Boolean).length;
+}
+
+// Fascia di lunghezza: 0 = singola parola, 1 = breve (2-3 parole),
+// 2 = media (4-7 parole), 3 = lunga (8+ parole, frase descrittiva)
+function lengthBand(s) {
+  const n = wordCount(s);
+  if (n <= 1) return 0;
+  if (n <= 3) return 1;
+  if (n <= 7) return 2;
+  return 3;
+}
+
+// Filtra un pool di candidati tenendo solo quelli con lunghezza simile alla risposta corretta,
+// allargando la fascia consentita solo se non ce ne sono abbastanza
+function filterByBand(candidates, correct) {
+  const targetBand = lengthBand(correct);
+  let exact = candidates.filter(a => lengthBand(a) === targetBand);
+  if (exact.length >= 3) return exact;
+  const near = candidates.filter(a => Math.abs(lengthBand(a) - targetBand) === 1 && !exact.includes(a));
+  return exact.concat(near);
+}
+
+// Normalizza un testo per il confronto (minuscolo, solo lettere/numeri)
+function normalizeForDup(s) {
+  return s.toLowerCase().replace(/[^a-z0-9à-ÿ]+/g, '');
+}
+
+// Estrae le sequenze numeriche presenti in un testo (es. "266", "1991")
+function digitGroups(s) {
+  return (s.match(/\d+/g) || []);
+}
+
+// Vero se 'candidate' è in pratica la stessa informazione di 'correct'
+// (stessa stringa normalizzata, una contenuta nell'altra, o stessi numeri/date citati)
+function isDuplicateOf(correct, candidate) {
+  const nc = normalizeForDup(correct);
+  const nd = normalizeForDup(candidate);
+  if (nc === nd) return true;
+  if (nc.length > 4 && (nd.includes(nc) || nc.includes(nd))) return true;
+  const dgC = digitGroups(correct);
+  const dgD = digitGroups(candidate);
+  if (dgC.length && dgD.length) {
+    for (const d of dgC) {
+      if (dgD.includes(d)) return true;
+    }
+  }
+  return false;
+}
+
+const QUIZ_LENGTH = 30;
+
+let pool = [];
+let current = 0;
+let score = 0;
+let userAnswers = [];
+let answered = false;
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildOptions(qIndex) {
+  const correct = pool[qIndex].a;
+  const block = pool[qIndex].block;
+  let candidates = [];
+
+  const notDuplicate = a => !isDuplicateOf(correct, a);
+  const notAlreadyPicked = a => !candidates.includes(a);
+
+  // priorità 1: stessa "forma" della risposta (nome proprio, numero/decennio, sì/no, paese+personaggio)
+  // con in più lo stesso vincolo di lunghezza/struttura, perché anche dentro una categoria
+  // (es. "numeri/decenni") possono convivere risposte molto diverse come lunghezza ("14" vs "Anni '80 e '90")
+  const shape = classifyShape(correct);
+  if (shape && SHAPE_POOLS[shape]) {
+    const shapeRaw = SHAPE_POOLS[shape].filter(a => a !== correct).filter(notDuplicate);
+    const shapeCandidates = filterByBand(shapeRaw, correct);
+    candidates = candidates.concat(shuffle(shapeCandidates));
+  }
+
+  // priorità 2: risposte vere del Paniere ufficiale, stesso argomento del blocco
+  // E con una lunghezza/struttura simile alla risposta corretta (per evitare frasi lunghe
+  // abbinate a risposte brevi, o viceversa)
+  if (candidates.length < 3) {
+    const fromPaniereRaw = (PANIERE_POOL[block] || []).filter(a => a !== correct).filter(notDuplicate).filter(notAlreadyPicked);
+    const fromPaniere = filterByBand(fromPaniereRaw, correct);
+    candidates = candidates.concat(shuffle(fromPaniere));
+  }
+
+  // priorità 3: risposte di altre domande inedite dello stesso blocco, stessa fascia di lunghezza
+  if (candidates.length < 3) {
+    const sameBlockRaw = pool.filter((p, i) => i !== qIndex && p.block === block).map(p => p.a).filter(notDuplicate).filter(notAlreadyPicked);
+    const sameBlock = filterByBand(sameBlockRaw, correct);
+    candidates = candidates.concat(shuffle(sameBlock));
+  }
+
+  // priorità 4: se il pool tematico non basta, riprovo senza vincolo di blocco ma
+  // mantenendo il vincolo di lunghezza/struttura (meglio un argomento diverso ma
+  // una risposta "credibile" nella forma, che una frase palesemente fuori posto)
+  if (candidates.length < 3) {
+    const allPaniereAnswers = Object.values(PANIERE_POOL).flat();
+    const wideRaw = allPaniereAnswers.filter(a => a !== correct).filter(notDuplicate).filter(notAlreadyPicked);
+    const wide = filterByBand(wideRaw, correct);
+    candidates = candidates.concat(shuffle(wide));
+  }
+
+  // priorità 5 (fallback estremo): qualunque altra risposta del questionario
+  if (candidates.length < 3) {
+    const anyOther = pool.filter((p, i) => i !== qIndex).map(p => p.a).filter(notDuplicate).filter(notAlreadyPicked);
+    candidates = candidates.concat(shuffle(anyOther));
+  }
+
+  // rete di sicurezza finale: anche in caso di dati duplicati a monte,
+  // mi assicuro che le opzioni mostrate siano sempre 4 stringhe distinte
+  const uniqueCandidates = [];
+  for (const c of candidates) {
+    if (!uniqueCandidates.includes(c) && c !== correct) uniqueCandidates.push(c);
+  }
+
+  const distractors = uniqueCandidates.slice(0, 3);
+  return shuffle([correct, ...distractors]);
+}
+
+function renderStart() {
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="card start-screen">
+      <h2 style="color:#7B1535;">Pronto per iniziare?</h2>
+      <p>${QUIZ_LENGTH} domande inedite di Metodologia della Ricerca, estratte a caso ogni volta tra le ${QUESTIONS.length} disponibili.
+      Per ogni domanda vedrai 4 opzioni: quella giusta e 3 alternative scelte con cura sia per argomento sia per "lunghezza/struttura" simile alla risposta corretta (una risposta breve non sarà mai mischiata a frasi lunghe e descrittive, e viceversa), così da evitare opzioni palesemente fuori posto. Non vedrai se hai risposto bene o male durante il quiz: l'esito completo, domanda per domanda, sarà mostrato solo alla fine. Ad ogni tentativo le domande, l'ordine e le opzioni cambiano.</p>
+      <button class="start" onclick="startQuiz()">Inizia il quiz</button>
+    </div>
+  `;
+}
+
+function startQuiz() {
+  pool = shuffle(QUESTIONS).slice(0, QUIZ_LENGTH);
+  current = 0;
+  score = 0;
+  userAnswers = [];
+  renderQuestion();
+}
+
+function renderQuestion() {
+  answered = false;
+  const app = document.getElementById('app');
+  const q = pool[current];
+  const options = buildOptions(current);
+  const pct = Math.round((current / pool.length) * 100);
+
+  app.innerHTML = `
+    <div class="topbar">
+      <span>Domanda ${current + 1} / ${pool.length}</span>
+      <span>Quiz da ${pool.length} domande</span>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+    <div class="card">
+      <div class="block-tag">${q.block.replace('BLOCCO ', 'Blocco ')}</div>
+      <div class="question">${q.q}</div>
+      <div class="options" id="options"></div>
+      <div class="controls"><button class="next" id="nextBtn" onclick="nextQuestion()">${current + 1 === pool.length ? 'Vedi risultati →' : 'Avanti →'}</button></div>
+    </div>
+  `;
+
+  const optsDiv = document.getElementById('options');
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.textContent = opt;
+    btn.onclick = () => selectOption(btn, opt, q.a);
+    optsDiv.appendChild(btn);
+  });
+}
+
+function selectOption(btn, chosen, correctAnswer) {
+  const buttons = document.querySelectorAll('.option');
+  buttons.forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  userAnswers[current] = { q: pool[current].q, block: pool[current].block, correct: correctAnswer, chosen: chosen };
+
+  document.getElementById('nextBtn').style.display = 'inline-block';
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= pool.length) {
+    renderScore();
+  } else {
+    renderQuestion();
+  }
+}
+
+function renderScore() {
+  score = userAnswers.filter(a => a && a.chosen === a.correct).length;
+  const app = document.getElementById('app');
+  const pct = Math.round((score / pool.length) * 100);
+
+  let reviewHtml = '<div class="review-list"><strong>Riepilogo domanda per domanda:</strong>';
+  userAnswers.forEach((a, i) => {
+    const isCorrect = a && a.chosen === a.correct;
+    reviewHtml += `
+      <div class="review-item">
+        <div class="rblock">${a.block.replace('BLOCCO ', 'Blocco ')}</div>
+        <div class="rq">${i + 1}. ${a.q}</div>
+        <div style="color:${isCorrect ? '#1E7B34' : '#B3261E'};">La tua risposta: ${a.chosen}</div>
+        ${isCorrect ? '' : `<div class="ra">Risposta corretta: ${a.correct}</div>`}
+      </div>`;
+  });
+  reviewHtml += '</div>';
+
+  app.innerHTML = `
+    <div class="card score-screen">
+      <h2>Quiz completato</h2>
+      <div class="score-big">${score} / ${pool.length}</div>
+      <div class="score-sub">${pct}% di risposte corrette</div>
+      <button class="restart" onclick="startQuiz()">Rifai il quiz (nuove domande)</button>
+      ${reviewHtml}
+    </div>
+  `;
+}
+
+renderStart();
+</script>
+
+</body>
+</html>
